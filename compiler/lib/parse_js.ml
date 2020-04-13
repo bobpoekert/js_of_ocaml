@@ -85,8 +85,8 @@ let lexer_aux ?(rm_comment = true) lines_info lexbuf =
             }
       in
       match prev with
-      | None -> { pi with Parse_info.fol = Some true }
-      | Some prev ->
+      | [] -> { pi with Parse_info.fol = Some true }
+      | prev :: _ ->
           let prev_pi = Js_token.info_of_tok prev in
           if prev_pi.Parse_info.line <> pi.Parse_info.line
              && Option.equal String.equal prev_pi.Parse_info.name pi.Parse_info.name
@@ -110,10 +110,10 @@ let lexer_aux ?(rm_comment = true) lines_info lexbuf =
               with _ -> extra)
           | _ -> extra
         in
-        let prev = if Js_token.is_comment t then prev else Some t in
+        let prev = if Js_token.is_comment t then prev else t :: prev in
         loop lexbuf extra lines_info prev (t :: acc)
   in
-  let toks = loop lexbuf None lines_info None [] in
+  let toks = loop lexbuf None lines_info [] [] in
   (* hack: adjust tokens *)
   adjust_tokens ~keep_comment:(not rm_comment) toks
 

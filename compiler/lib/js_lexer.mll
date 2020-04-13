@@ -120,13 +120,13 @@ rule initial tokinfo prev = parse
   | "++" {
       let cpi = tokinfo lexbuf in
       match prev with
-        | Some p when (Js_token.info_of_tok p).Parse_info.line = cpi.Parse_info.line ->
+        | p :: _ when (Js_token.info_of_tok p).Parse_info.line = cpi.Parse_info.line ->
           T_INCR_NB(cpi)
         | _ -> T_INCR(cpi) }
   | "--" {
       let cpi = tokinfo lexbuf in
       match prev with
-        | Some p when (Js_token.info_of_tok p).Parse_info.line = cpi.Parse_info.line ->
+        | p :: _ when (Js_token.info_of_tok p).Parse_info.line = cpi.Parse_info.line ->
           T_DECR_NB(cpi)
         | _ -> T_DECR(cpi) }
   | "<<=" { T_LSHIFT_ASSIGN (tokinfo lexbuf); }
@@ -230,21 +230,13 @@ rule initial tokinfo prev = parse
   | "/" | "/=" {
     let s = tok lexbuf in
       let info = tokinfo lexbuf in
-
-      match prev with
-      | Some (
-            T_IDENTIFIER _
-          | T_NUMBER _ | T_STRING _ | T_REGEX _
-          | T_FALSE _ | T_TRUE _ | T_NULL _
-          | T_THIS _
-          | T_INCR _ | T_DECR _
-          | T_RBRACKET _ | T_RPAREN _
-        ) -> begin match s with
+      match Js_token.div_or_regexp prev with
+      | `Div | `Unknown `Div ->
+        (match s with
           | "/" -> T_DIV (info);
           | "/=" -> T_DIV_ASSIGN info
-          | _ -> assert false
-        end
-      | _ ->
+          | _ -> assert false)
+      |  `Regexp | `Unknown `Regexp | `NA   ->
           let buf = Buffer.create 127 in
           Buffer.add_string buf s;
           regexp buf lexbuf;

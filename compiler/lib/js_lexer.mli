@@ -19,7 +19,7 @@
 
 val initial :
      (Lexing.lexbuf -> Parse_info.t)
-  -> Js_token.token option
+  -> Js_token.token list
   -> Lexing.lexbuf
   -> Js_token.token
 

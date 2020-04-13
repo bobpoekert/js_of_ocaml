@@ -44,6 +44,11 @@ let%expect_test "no postfix subtraction coalesce" =
     a-
     -b; |}]
 
+let%expect_test "parsing regexp" =
+  print ~compact:true "for(;;) /a/.test('a')";
+  [%expect {|
+    for(;;)/a/.test("a"); |}]
+
 let%expect_test "reserved words as fields" =
   print
     ~compact:false
